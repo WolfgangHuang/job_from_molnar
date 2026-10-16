@@ -1,0 +1,163 @@
+---
+import Base from '../layouts/Base.astro';
+import CropMarks from '../components/CropMarks.astro';
+import JobCard from '../components/JobCard.astro';
+import Perforation from '../components/Perforation.astro';
+import PlotSvg from '../components/PlotSvg.astro';
+import { jobs } from '../jobs';
+import { hero } from '../jobs/hero';
+import { jobUrl } from '../lib/site';
+
+const heroPlot = hero();
+const count = jobs.length;
+
+const BANNER_TOP = `  JJJ   OOO   BBBB        FFFFF  RRRR    OOO   M   M
+   J   O   O  B   B       F      R   R  O   O  MM MM
+   J   O   O  B   B       F      R   R  O   O  M M M
+   J   O   O  BBBB        FFFF   RRRR   O   O  M   M
+J  J   O   O  B   B       F      R R    O   O  M   M
+J  J   O   O  B   B       F      R  R   O   O  M   M
+ JJ     OOO   BBBB        F      R   R   OOO   M   M`;
+const BANNER_BOTTOM = `M   M   OOO   L      N   N   AAA   RRRR
+MM MM  O   O  L      NN  N  A   A  R   R
+M M M  O   O  L      N N N  A   A  R   R
+M   M  O   O  L      N  NN  AAAAA  RRRR
+M   M  O   O  L      N   N  A   A  R R
+M   M  O   O  L      N   N  A   A  R  R
+M   M   OOO   LLLLL  N   N  A   A  R   R`;
+---
+<Base
+  title="Job from Molnar"
+  description="A Vera Molnar appreciation project: her algorithms, re-run as print jobs you can change and save."
+  job="0000"
+  prevHref={jobUrl(jobs[count - 1]!.no)}
+  nextHref={jobUrl(jobs[0]!.no)}
+  greenbars
+>
+  <!-- job ticket -->
+  <div class="ticket caps">
+    <div class="ticket-l">
+      <span class="stars">****</span>
+      <span class="strong">Job 1968 from Molnar</span>
+      <span class="stars">****</span>
+      <span class="dim">Queue: Plotter</span>
+    </div>
+    <span class="pencil note">à voir — {count} jobs</span>
+  </div>
+
+  <!-- banner page -->
+  <section class="banner">
+    <div class="intro">
+      <div class="ascii">
+        <pre aria-hidden="true" class="ascii-top">{BANNER_TOP}</pre>
+        <pre aria-hidden="true" class="ascii-bottom">{BANNER_BOTTOM}</pre>
+      </div>
+      <h1 class="visually-hidden">Job from Molnar</h1>
+      <p class="subtitle">A Vera Molnar<br />Appreciation Project</p>
+      <p id="about" class="about">
+        Vera Molnar (1924–2023) began working with computers in 1968. Her programs went out as print jobs; the results
+        came back on continuous-feed paper, one sheet after the next. This site re-runs her ideas the same way — one job
+        at a time.
+      </p>
+      <div class="cta">
+        <a class="run" href="#jobs">Run the jobs ↓</a>
+        <span class="caps dim small">{count} jobs · 2 pens</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <CropMarks size={18} pad={22}>
+        <PlotSvg plot={heroPlot} strokes={[0.8, 1.4]} label="Plot: concentric squares drifting from order into disorder" />
+      </CropMarks>
+      <div class="stamp">Plotted · 1968</div>
+    </div>
+  </section>
+
+  <Perforation />
+
+  <!-- jobs -->
+  <section id="jobs" class="jobs">
+    <div class="jobs-head">
+      <h2>The Jobs</h2>
+      <div class="legend caps">
+        <div>Jobs {jobs[0]!.no} – {jobs[count - 1]!.no}</div>
+        <div><span class="swatch ink"></span> Pen 1 · Black &nbsp; <span class="swatch pen"></span> Pen 2 · Colour</div>
+      </div>
+    </div>
+    <div class="grid">
+      {jobs.map((job) => <JobCard job={job} />)}
+    </div>
+  </section>
+
+  <Perforation />
+
+  <!-- end of job -->
+  <section id="end" class="end">
+    <div>
+      <div class="caps strong">**** End of job 1968 ****</div>
+      <div class="dim">Sheets: 3 · Pens returned: 2 · Status: OK</div>
+    </div>
+    <div class="col">
+      <span class="caps label">Colophon</span>
+      <span>Set in IBM Plex Mono &amp; DotGothic16.</span>
+      <span>A tribute, not affiliated with the estate.</span>
+    </div>
+    <div class="col">
+      <span class="caps label">Operator</span>
+      <span>[YOUR NAME]</span>
+      <a href="#">[Impressum]</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ticket { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 32px; font-size: 12px; }
+  .ticket-l { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .stars { color: var(--pen); font-weight: 700; }
+  .strong { font-weight: 500; }
+  .dim { opacity: .7; }
+  .small { font-size: 12px; }
+  .note { font-size: 26px; transform: rotate(-2deg); }
+
+  .banner {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 48px 64px; align-items: center; padding: 56px 0 72px;
+  }
+  .intro { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+  .ascii { overflow-x: auto; }
+  .ascii pre { margin: 0; font-family: var(--font-mono); font-weight: 700; line-height: 1.02; letter-spacing: 0; }
+  .ascii-top { font-size: clamp(7px, 1.12vw, 14px); color: var(--pen); }
+  .ascii-bottom { margin-top: 14px !important; font-size: clamp(9.5px, 1.5vw, 19px); color: var(--ink); }
+  .subtitle { margin: 0; font-family: var(--font-dot); font-size: clamp(22px, 2.6vw, 32px); line-height: 1.2; letter-spacing: .02em; }
+  .about { margin: 0; max-width: 46ch; font-size: 14px; line-height: 24px; }
+  .cta { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .run {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px;
+    background: var(--ink); color: #F4F2E9; text-decoration: none; font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .run:hover { color: #F4F2E9; background: #000; }
+
+  .hero { position: relative; min-width: 0; }
+  .stamp {
+    position: absolute; right: -6px; bottom: 40px; transform: rotate(-7deg);
+    border: 2px solid var(--pen); color: var(--pen); padding: 6px 12px;
+    font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; background: rgba(244,242,233,.85);
+  }
+
+  .jobs { padding: 64px 0 80px; display: flex; flex-direction: column; gap: 48px; }
+  .jobs-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 40px; }
+  h2 { margin: 0; font-family: var(--font-dot); font-weight: 400; font-size: clamp(36px, 5vw, 64px); line-height: 1; letter-spacing: .02em; }
+  .legend { font-size: 12px; line-height: 20px; letter-spacing: .12em; text-align: right; }
+  .swatch { display: inline-block; width: 22px; border-top: 2px solid; vertical-align: middle; }
+  .swatch.ink { border-color: var(--ink); }
+  .swatch.pen { border-color: var(--pen); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 56px 40px; }
+
+  .end {
+    padding: 56px 0 72px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 32px 64px; font-size: 13px; line-height: 24px;
+  }
+  .end .strong { font-weight: 700; }
+  .col { display: flex; flex-direction: column; }
+  .label { font-size: 11px; opacity: .7; }
+</style>

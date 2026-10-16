@@ -1,0 +1,27 @@
+---
+// Four printer's crop marks around the slot content.
+interface Props {
+  /** length of each mark in px */
+  size?: number;
+  /** padding between marks and content in px */
+  pad?: number;
+  class?: string;
+}
+const { size = 18, pad = 22, class: cls } = Astro.props;
+---
+<div class:list={['crop', cls]} style={`--crop:${size}px; --crop-pad:${pad}px`}>
+  <span aria-hidden="true" class="m tl"></span>
+  <span aria-hidden="true" class="m tr"></span>
+  <span aria-hidden="true" class="m bl"></span>
+  <span aria-hidden="true" class="m br"></span>
+  <slot />
+</div>
+
+<style>
+  .crop { position: relative; padding: var(--crop-pad); min-width: 0; }
+  .m { position: absolute; width: var(--crop); height: var(--crop); border: 0 solid var(--ink); }
+  .tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+  .tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+  .bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+  .br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+</style>

@@ -1,0 +1,33 @@
+---
+import { pensLabel } from '../engine';
+import { runJob, THUMB_STROKES, type JobDef } from '../jobs';
+import { jobUrl } from '../lib/site';
+import CropMarks from './CropMarks.astro';
+import PlotSvg from './PlotSvg.astro';
+
+interface Props {
+  job: JobDef;
+}
+const { job } = Astro.props;
+const plot = runJob(job, job.thumbnail);
+---
+<a class="job" href={jobUrl(job.no)}>
+  <CropMarks size={12} pad={16}>
+    <PlotSvg plot={plot} strokes={THUMB_STROKES} />
+  </CropMarks>
+  <div class="slip">
+    <div class="meta"><span>Job {job.no}</span><span>{pensLabel(plot)}</span></div>
+    <div class="title">{job.title}</div>
+  </div>
+</a>
+
+<style>
+  .job { display: flex; flex-direction: column; gap: 14px; text-decoration: none; color: var(--ink); transition: transform .25s ease; }
+  .job:hover { transform: translateY(-4px) rotate(-.4deg); color: var(--ink); }
+  .job:focus-visible { outline: 2px dashed var(--ink); outline-offset: 6px; }
+  .slip { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--ink); transition: background .2s, color .2s; }
+  .job:hover .slip, .job:focus-visible .slip { background: var(--ink); color: #F4F2E9; }
+  .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+  .title { font-family: var(--font-dot); font-size: 20px; line-height: 1.2; }
+  .job :global(.plot) { overflow: visible; }
+</style>

@@ -1,0 +1,18 @@
+---
+// Dotted tear line across the full sheet width.
+---
+<div class="perf" aria-hidden="true">
+  <div class="dots"></div>
+  <span>TEAR HERE</span>
+  <div class="dots end"></div>
+</div>
+
+<style>
+  .perf {
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 calc(-1 * var(--pad-x)) 0 calc(-1 * var(--pad-l));
+    font-size: 10px; letter-spacing: .3em; color: rgba(26,26,24,.5);
+  }
+  .dots { flex: 1 1 auto; border-top: 2px dotted rgba(26,26,24,.45); }
+  .end { flex: 0 0 40px; }
+</style>

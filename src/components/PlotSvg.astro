@@ -1,0 +1,25 @@
+---
+// Renders a Plot as inline SVG with one <path> per pen.
+import { pathData, type Plot } from '../engine';
+
+interface Props {
+  plot: Plot;
+  strokes: [number, number];
+  /** accessible label; omit for decorative plots */
+  label?: string;
+  live?: boolean;
+  id?: string;
+}
+const { plot, strokes, label, live = false, id } = Astro.props;
+---
+<svg
+  id={id}
+  class:list={['plot', { 'plot--live': live }]}
+  viewBox={`0 0 ${plot.width} ${plot.height}`}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+>
+  <path class="pen1" d={pathData(plot.pens[1])} stroke-width={strokes[0]} data-pen="1"></path>
+  <path class="pen2" d={pathData(plot.pens[2])} stroke-width={strokes[1]} data-pen="2"></path>
+</svg>

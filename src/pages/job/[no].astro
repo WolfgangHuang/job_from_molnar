@@ -1,0 +1,119 @@
+---
+import Base from '../../layouts/Base.astro';
+import CropMarks from '../../components/CropMarks.astro';
+import ParameterSlip from '../../components/ParameterSlip.astro';
+import Perforation from '../../components/Perforation.astro';
+import PlotSvg from '../../components/PlotSvg.astro';
+import { pensLabel } from '../../engine';
+import { DEFAULT_STROKES, defaults, jobs, neighbours, runJob, type JobDef } from '../../jobs';
+import { jobUrl } from '../../lib/site';
+
+export function getStaticPaths() {
+  return jobs.map((job) => ({ params: { no: job.no }, props: { job } }));
+}
+
+interface Props {
+  job: JobDef;
+}
+const { job } = Astro.props;
+const { prev, next } = neighbours(job.no);
+const p = defaults(job);
+const plot = runJob(job);
+const strokes = job.strokes?.(p) ?? DEFAULT_STROKES;
+const pens = pensLabel(plot).toLowerCase().replace('+', ' + ');
+---
+<Base
+  title={`Job ${job.no} · ${job.title} — Job from Molnar`}
+  description={`${job.title}: ${job.technique}, after Vera Molnar. Change the parameters, re-run the job, save it as SVG, PNG or PDF.`}
+  job={job.no}
+  prevHref={jobUrl(prev.no)}
+  nextHref={jobUrl(next.no)}
+>
+  <div class="detail" data-detail data-job={job.no}>
+    <!-- job ticket line + prev/next -->
+    <div class="ticket caps">
+      <div class="ticket-l">
+        <span class="stars">****</span>
+        <span class="strong">Job {job.no} from Molnar</span>
+        <span class="stars">****</span>
+        <span class="dim">Run <span data-run>0001</span> · Seed <span data-seed>{job.seed}</span></span>
+      </div>
+      <nav class="prevnext" aria-label="Jobs">
+        <a href={jobUrl(prev.no)}>‹ Job {prev.no}</a>
+        <a href={jobUrl(next.no)}>Job {next.no} ›</a>
+      </nav>
+    </div>
+
+    <!-- title -->
+    <div class="titles">
+      <h1>{job.title}</h1>
+      <div class="sub caps">After Vera Molnar · {job.technique} · {pens}</div>
+    </div>
+
+    <!-- stage: plot + parameter slip -->
+    <div class="stage">
+      <div class="plot-col">
+        <CropMarks size={20} pad={26}>
+          <PlotSvg id="plot" plot={plot} strokes={strokes} label={`Plot: ${job.label(p)}`} live />
+          <div class="under" aria-hidden="true">
+            <span class="caps" data-caption>{job.caption(p)}</span>
+            <span class="pencil" data-note>{job.note?.(p, 1) ?? 'run 1'}</span>
+          </div>
+        </CropMarks>
+      </div>
+      <div class="slot">
+        <ParameterSlip job={job} />
+      </div>
+    </div>
+
+    <!-- about the work -->
+    <div class="about">
+      <div class="text">
+        <p set:html={job.description} />
+        {job.reference && <p class="ref"><span class="caps">Reference</span> {job.reference}</p>}
+      </div>
+      <div>
+        <button class="key key--wide" type="button" data-panel-toggle aria-expanded="false" aria-controls="param-slip">Parameters ▸</button>
+      </div>
+    </div>
+
+    <Perforation />
+    <div class="eoj caps">**** End of job {job.no} ****</div>
+  </div>
+</Base>
+
+<script>
+  import { initDetail } from '../../scripts/detail';
+  initDetail();
+</script>
+
+<style>
+  .detail { display: flex; flex-direction: column; gap: 32px; padding-top: 8px; }
+  .ticket { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 24px; font-size: 12px; }
+  .ticket-l { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stars { color: var(--pen); font-weight: 700; }
+  .strong { font-weight: 500; }
+  .dim { opacity: .7; }
+  .prevnext { display: flex; gap: 4px; }
+  .prevnext a { padding: 12px 8px; text-decoration: none; }
+
+  .titles { display: flex; flex-direction: column; gap: 8px; }
+  h1 { margin: 0; font-family: var(--font-dot); font-weight: 400; font-size: clamp(40px, 6vw, 80px); line-height: 1; }
+  .sub { font-size: 13px; letter-spacing: .1em; opacity: .75; }
+
+  .stage { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+  .plot-col { flex: 1 1 420px; max-width: 700px; min-width: 0; margin: 0 auto; }
+  .under { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 14px; font-size: 11px; opacity: .8; }
+  .under .pencil { font-size: 24px; }
+  .slot { flex: 0 0 0px; max-width: 100%; overflow: hidden; transition: flex-basis 1s steps(18, end); padding: 8px 0 30px; }
+  .detail[data-panel-open] .slot { flex-basis: 380px; }
+
+  .about {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 24px 64px; padding: 24px 0 64px; font-size: 14px; line-height: 24px;
+  }
+  .text p { margin: 0 0 12px; max-width: 52ch; }
+  .ref { font-size: 13px; opacity: .8; }
+  .ref .caps { font-size: 11px; margin-right: 6px; }
+  .eoj { padding: 0 0 48px; font-size: 13px; font-weight: 700; }
+</style>

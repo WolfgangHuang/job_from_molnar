@@ -1,0 +1,320 @@
+---
+// The printer head (after the Benson 1112) with pen carriage, keypad and the printed menu.
+import { jobs } from '../jobs';
+import { jobUrl, url } from '../lib/site';
+
+interface Props {
+  /** current job number, "0000" on the start page */
+  job: string;
+  prevHref: string;
+  nextHref: string;
+}
+const { job, prevHref, nextHref } = Astro.props;
+
+const keys = [
+  { pink: true, digit: '0', label: 'START', aria: 'Start page', href: url(), size: 8 },
+  { pink: false, label: '◂', aria: 'Previous job', href: prevHref, size: 15 },
+  { pink: false, label: '▸', aria: 'Next job', href: nextHref, size: 15 },
+  { pink: true, digit: '1', label: 'JOBS', aria: 'All jobs', href: url('#jobs'), size: 8 },
+  { pink: true, digit: '2', label: 'INFO', aria: 'About the project', href: url('#about'), size: 8 },
+  { pink: false, label: 'AUTO', aria: 'Run a random job', href: jobUrl(jobs[0]!.no), size: 10, auto: true },
+];
+
+const menu = [
+  { no: '0000', label: 'Start', href: url(), here: job === '0000' },
+  ...jobs.map((j) => ({ no: j.no, label: j.title, href: jobUrl(j.no), here: j.no === job })),
+  { no: '----', label: 'About · Colophon', href: url('#about'), here: false },
+];
+---
+<div class="printer" data-printer data-job={job} data-jobs={jobs.map((j) => j.no).join(',')} data-base={url()}>
+  <div class="lid" aria-hidden="true"></div>
+
+  <div class="casing">
+    <!-- left: band, carriage bay, paper exit -->
+    <div class="bay-side">
+      <div class="band">
+        <a href={url()}>job from molnar</a>
+      </div>
+
+      <div class="bay" aria-hidden="true">
+        <!-- the same sheet as below: same width and position, its right edge runs under the control panel -->
+        <div class="bay-paper" data-bay-paper>
+          <div class="bay-tractor l"><div class="bay-ticks"></div></div>
+          <div class="bay-tractor r"></div>
+        </div>
+        <div class="trace" data-trace></div>
+        <div class="rail"></div>
+        <div class="cable"></div>
+
+        <div class="carriage" data-carriage>
+          <div class="arm"></div>
+          <div class="plate">
+            {['var(--ink)', 'var(--pen)', 'var(--band-blue)'].map((c) => (
+              <div class="holder">
+                <span class="cap" style={`background:${c}`}></span>
+                <span class="screw"></span>
+                <span class="tip" style={`background:${c}`}></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="tapes" aria-hidden="true">
+        <span class="dymo t1">TRACÉ À 2 PLUMES</span>
+        <span class="dymo t2">VÉRIFIER LES PLUMES</span>
+      </div>
+
+      <div class="exit" aria-hidden="true">
+        <div class="roller"></div>
+        <div class="slot"></div>
+      </div>
+    </div>
+
+    <!-- right: control module, sits over the end of the rail -->
+    <div class="module">
+      <div class="module-inner">
+        <div class="card-holder">
+          <span class="card-label" aria-hidden="true">JOB</span>
+          <div class="card"><span class="visually-hidden">Job </span>ø{job}</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-row">
+            <nav aria-label="Site" class="keypad">
+              {keys.map((k) => (
+                <a
+                  class:list={['key', 'pkey', { 'key--pink': k.pink }]}
+                  href={k.href}
+                  aria-label={k.aria}
+                  title={k.aria}
+                  data-auto={k.auto ? '' : undefined}
+                >
+                  {k.digit && (
+                    <svg aria-hidden="true" width="18" height="16" viewBox="0 0 18 16">
+                      <path d="M3 13 L12 4 L14 6 L5 15 Z M3 13 L2 16 L5 15" fill="none" stroke="#3A3835" stroke-width="1.3" stroke-linejoin="round" />
+                      <text x="13" y="15" font-size="7" font-family="IBM Plex Mono, monospace" fill="#3A3835">{k.digit}</text>
+                    </svg>
+                  )}
+                  <span aria-hidden="true" style={`font-size:${k.size}px`}>{k.label}</span>
+                </a>
+              ))}
+            </nav>
+
+            <div class="menu-btn">
+              <div class="bezel">
+                <button class="redbtn" type="button" data-menu-toggle aria-expanded="false" aria-controls="menu-sheet" aria-label="Print the menu">
+                  <svg aria-hidden="true" width="26" height="26" viewBox="0 0 26 26"><path d="M5 6 L13 20 L21 6" fill="none" stroke="#FBEDEA" stroke-width="2.2" stroke-linejoin="round" /><path d="M6 21 Q10 17 13 21 T20 21" fill="none" stroke="#FBEDEA" stroke-width="1.6" /></svg>
+                </button>
+              </div>
+              <span class="menu-word" aria-hidden="true" data-menu-word>MENU</span>
+            </div>
+          </div>
+
+          <div class="plaque" aria-hidden="true">
+            <div class="test">
+              <span class="stack"><span>TEST</span><span>IN</span><span>OUT</span></span>
+              <svg width="10" height="20" viewBox="0 0 10 20"><circle cx="5" cy="12" r="4" fill="#9A978F" stroke="#5F5C55" /><path d="M5 12 L5 3" stroke="#3E3C38" stroke-width="2" stroke-linecap="round" /></svg>
+            </div>
+            <div class="lamp"><span>READY</span><span class="bulb ready"></span></div>
+            <div class="lamp"><span>PLUME</span><span class="bulb plume"></span></div>
+            <div class="lamp config"><span>CONFIG</span><span class="bits">8 4 2 1</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- the menu feeds out of the slot -->
+  <div class="menu-clip">
+    <div class="menu-sheet" id="menu-sheet" data-menu-sheet>
+      <div class="menu-paper">
+        <div class="menu-tractor l" aria-hidden="true"><div class="menu-ticks"></div></div>
+        <div class="menu-body">
+          <div class="menu-head">
+            <span class="menu-title">Index of jobs</span>
+            <span class="pencil menu-note" aria-hidden="true">menu / 68</span>
+          </div>
+          {menu.map((m) => (
+            <a class="mi" href={m.href} aria-current={m.here ? 'page' : undefined}>
+              <span class="mno">{m.no}</span>
+              <span class="mt">{m.label}</span>
+              <span class="mdots" aria-hidden="true"></span>
+              <span class="mtag">{m.here ? '◂ HERE' : ''}</span>
+            </a>
+          ))}
+          <div class="menu-end" aria-hidden="true">**** END OF MENU ****</div>
+        </div>
+        <div class="menu-tractor r" aria-hidden="true"></div>
+      </div>
+      <svg class="torn" aria-hidden="true" viewBox="0 0 100 4" preserveAspectRatio="none"><path d="M0 0 L100 0 L100 1 L96 4 L92 1 L88 4 L84 1 L80 4 L76 1 L72 4 L68 1 L64 4 L60 1 L56 4 L52 1 L48 4 L44 1 L40 4 L36 1 L32 4 L28 1 L24 4 L20 1 L16 4 L12 1 L8 4 L4 1 L0 4 Z" fill="var(--paper)" /></svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initPrinter } from '../scripts/printer';
+  initPrinter();
+</script>
+
+<style>
+  .printer { position: relative; z-index: 20; max-width: var(--printer-max); margin: 0 auto; }
+
+  .lid {
+    height: 16px; margin: 0 22px; background: var(--casing-lid);
+    border: 1px solid var(--casing-edge); border-bottom: 0; border-radius: 10px 10px 0 0;
+    box-shadow: inset 0 2px 0 #E4E1D8;
+  }
+  .casing {
+    position: relative; overflow: hidden; container-type: inline-size;
+    background: var(--casing); border: 1px solid var(--casing-edge); border-radius: 3px;
+    box-shadow: inset 0 2px 0 var(--casing-hi), inset 0 -4px 0 var(--casing-lo), 0 12px 24px rgba(40,40,36,.25);
+    display: flex; flex-wrap: wrap; align-items: stretch;
+  }
+
+  /* ---- left ---- */
+  .bay-side { position: relative; flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; padding-top: 16px; }
+  .band { background: var(--band-blue); border-top: 2px solid var(--band-blue-dk); border-bottom: 2px solid var(--band-blue-dk); padding: 0 28px; }
+  .band a {
+    display: inline-block; color: #fff; text-decoration: none;
+    font-family: var(--font-band); font-stretch: 125%; font-weight: 600; font-size: 19px; letter-spacing: .03em; padding: 14px 0;
+  }
+  .band a:focus-visible { outline-color: #fff; }
+
+  .bay { position: relative; height: 84px; background: var(--bay); box-shadow: inset 0 6px 8px rgba(40,40,36,.35); }
+  .bay-paper {
+    position: absolute; top: 8px; bottom: 0;
+    left: calc((100cqw - min(100cqw, var(--sheet-max))) / 2); width: min(100cqw, var(--sheet-max));
+    background-color: var(--paper);
+    box-shadow: 0 -2px 4px rgba(40,40,36,.25), inset 0 8px 10px -6px rgba(40,40,36,.35);
+  }
+  .bay-tractor {
+    position: absolute; top: 0; bottom: 0; width: var(--tractor);
+    background-image: radial-gradient(circle, var(--bay) 0 5.5px, transparent 6px);
+    background-size: 28px 40px; background-repeat: repeat-y;
+  }
+  .bay-tractor.l { left: 0; background-position: 4px 6px; border-right: 1.5px dashed var(--perforation); }
+  .bay-tractor.r { right: 0; background-position: calc(var(--tractor) - 32px) 6px; border-left: 1.5px dashed var(--perforation); }
+  .bay-ticks {
+    position: absolute; top: 0; bottom: 0; left: calc(var(--tractor) - 20px); width: 9px;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 58px, var(--tick) 58px 60px);
+  }
+  .trace {
+    position: absolute; left: 90px; right: 40px; top: 60px; height: 0;
+    border-top: 1.2px solid var(--pen); opacity: 0; transition: opacity .4s;
+  }
+  .printer[data-tracing] .trace { opacity: .8; }
+  .rail {
+    position: absolute; top: 18px; left: 14px; right: -80px; height: 7px;
+    background: var(--metal); border: 1px solid var(--metal-dark); border-radius: 3px; box-shadow: inset 0 2px 0 #CFCDC6;
+  }
+  .cable { position: absolute; top: 33px; left: 14px; right: -80px; height: 2px; background: #3A3835; }
+
+  .carriage {
+    position: absolute; top: 6px; left: calc(100% + 10px); width: 104px; height: 64px;
+    transform: translateX(-50%);
+  }
+  .arm { position: absolute; top: 14px; left: -12px; right: -12px; height: 7px; background: #8E8B83; border: 1px solid #5F5C55; }
+  .plate {
+    position: absolute; top: 0; bottom: 0; left: 8px; right: 8px;
+    background: var(--carriage); border: 1px solid var(--metal-dark); border-radius: 2px;
+    box-shadow: inset 0 2px 0 #DCDAD3, inset 0 -3px 0 #A09E96, 0 4px 6px rgba(40,40,36,.3);
+    display: flex; justify-content: center; gap: 5px; padding: 7px 6px 0;
+  }
+  .holder {
+    position: relative; width: 20px; height: 44px; background: #8C8982; border: 1px solid #5E5B55; border-radius: 4px 4px 1px 1px;
+    display: flex; flex-direction: column; align-items: center; padding-top: 4px; gap: 3px;
+  }
+  .cap { width: 11px; height: 18px; border-radius: 3px 3px 1px 1px; box-shadow: inset 1px 0 0 rgba(255,255,255,.3); }
+  .screw { width: 7px; height: 7px; border-radius: 50%; background: #DAD8D1; border: 1px solid #5E5B55; }
+  .tip { position: absolute; bottom: -9px; width: 3px; height: 4px; transition: height .15s; }
+  .carriage[data-down="0"] .holder:nth-child(1) .tip,
+  .carriage[data-down="1"] .holder:nth-child(2) .tip { height: 12px; }
+
+  .tapes { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 10px 28px 2px; border-top: 1px solid #F0EDE6; }
+  .t1 { transform: rotate(-.8deg); }
+  .t2 { transform: rotate(.6deg) translateY(1px); }
+
+  .exit { padding: 8px 22px 0; }
+  .roller { height: 6px; background: #9C9990; border: 1px solid #77746C; border-radius: 3px; }
+  .slot { height: 9px; margin: 6px 10px 0; background: var(--slot); border-radius: 4px 4px 0 0; box-shadow: inset 0 3px 4px rgba(0,0,0,.8); }
+
+  /* ---- right: control module ---- */
+  .module {
+    position: relative; z-index: 2; flex: 1 1 400px;
+    background: var(--casing); border-left: 2px solid #B4AFA3;
+    box-shadow: inset 1px 0 0 var(--casing-hi), -6px 0 10px rgba(40,40,36,.18);
+    padding: 14px 22px 16px; display: flex; align-items: center; justify-content: center;
+  }
+  .module-inner { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  .card-holder { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 6px; }
+  .card-label { font-size: 9px; letter-spacing: .18em; color: #5E5B54; }
+  .card {
+    background: #F5F2E9; border: 1px solid #99948A; box-shadow: inset 0 0 0 3px #E2DED3, 1px 1px 0 #B9B4A8;
+    padding: 2px 14px 0; font-family: var(--font-pencil); font-size: 30px; line-height: 1.1; color: #4E4B46;
+  }
+  .panel {
+    background: var(--panel-blue); border: 1px solid var(--panel-blue-dk); box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    padding: 12px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .panel-row { display: flex; gap: 14px; align-items: center; }
+  .keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; background: var(--key-frame); border-radius: 2px; }
+  .pkey {
+    width: var(--key); height: var(--key); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: #3A3835; font-weight: 700; letter-spacing: .06em; line-height: 1;
+  }
+  .pkey:hover { color: #3A3835; }
+  .pkey:focus-visible { outline: 2px dashed #fff; outline-offset: 1px; }
+  .menu-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bezel { padding: 4px; background: var(--btn-bezel); border: 1px solid #8F8A7F; box-shadow: 0 2px 0 #24467A; }
+  .bezel .redbtn { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .menu-word { font-size: 9px; font-weight: 700; letter-spacing: .2em; color: #fff; }
+  .plaque {
+    align-self: stretch; background: #C8C5BD; border: 1px solid #8C897F; padding: 6px 10px;
+    display: flex; align-items: center; gap: 14px; font-size: 8px; letter-spacing: .1em; color: #34322E;
+  }
+  .test { display: flex; align-items: center; gap: 5px; }
+  .stack { display: flex; flex-direction: column; line-height: 1.1; }
+  .lamp { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .config { margin-left: auto; }
+  .bits { letter-spacing: .3em; }
+  .bulb { width: 7px; height: 13px; border: 1px solid #45433E; background: var(--lamp-off); }
+  .bulb.ready { background: var(--lamp-ready); }
+  .printer[data-tracing] .bulb.ready { background: var(--lamp-off); }
+  .printer[data-tracing] .bulb.plume { background: var(--lamp-pen); }
+
+  /* ---- printed menu ---- */
+  .menu-clip {
+    position: absolute; top: 100%; left: clamp(16px, 5vw, 60px); width: min(500px, calc(100% - 32px));
+    height: 760px; max-height: calc(100vh - 40px); overflow: hidden; pointer-events: none;
+  }
+  .menu-sheet {
+    pointer-events: auto; transform: translateY(-104%); visibility: hidden;
+    transition: transform var(--feed), visibility 0s linear 1.1s;
+    filter: drop-shadow(0 14px 20px rgba(40,40,36,.28));
+  }
+  .printer[data-menu-open] .menu-sheet { transform: translateY(0); visibility: visible; transition: transform var(--feed), visibility 0s; }
+  .menu-paper { display: flex; background: var(--paper); }
+  .menu-tractor {
+    flex: 0 0 26px; position: relative;
+    background-image: radial-gradient(circle, var(--desk) 0 4.5px, transparent 5px);
+    background-size: 20px 28px; background-repeat: repeat-y;
+  }
+  .menu-tractor.l { background-position: 2px 10px; border-right: 1px dashed rgba(26,26,24,.28); }
+  .menu-tractor.r { background-position: 4px 10px; border-left: 1px dashed rgba(26,26,24,.28); }
+  .menu-ticks {
+    position: absolute; top: 0; bottom: 0; left: 20px; width: 6px;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 138px, var(--tick) 138px 140px);
+  }
+  .menu-body { flex: 1 1 auto; min-width: 0; padding: 22px 22px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+  .menu-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 8px; }
+  .menu-title { font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+  .menu-note { font-size: 24px; color: #5A5751; transform: rotate(-3deg); }
+  .mi { display: flex; align-items: center; gap: 10px; min-height: 30px; text-decoration: none; color: var(--ink); }
+  .mno { flex: 0 0 auto; opacity: .55; }
+  .mt { flex: 0 1 auto; min-width: 0; padding: 1px 4px; text-transform: uppercase; letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mi:hover .mt, .mi:focus-visible .mt { background: var(--ink); color: var(--paper); }
+  .mdots { flex: 1 1 auto; min-width: 12px; border-bottom: 2px dotted rgba(26,26,24,.32); transform: translateY(4px); }
+  .mtag { flex: 0 0 auto; font-size: 11px; letter-spacing: .12em; color: var(--pen); }
+  .menu-end { padding-top: 12px; font-size: 11px; letter-spacing: .14em; opacity: .55; }
+</style>

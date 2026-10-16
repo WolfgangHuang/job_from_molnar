@@ -1,0 +1,142 @@
+---
+// The parameter slip, built from the job's parameter definitions.
+import { defaults, showParam, type JobDef } from '../jobs';
+import { PEN_COLOURS } from '../lib/site';
+
+interface Props {
+  job: JobDef;
+}
+const { job } = Astro.props;
+const p = defaults(job);
+const formats = [
+  { id: 'pdf', label: 'PDF', hint: 'print' },
+  { id: 'png', label: 'PNG', hint: 'image' },
+  { id: 'svg', label: 'SVG', hint: 'plotter' },
+];
+---
+<div class="slip" id="param-slip" data-slip>
+  <div class="paper">
+    <div class="head">
+      <div class="head-l">
+        <span class="dymo tape">PARAMÈTRES</span>
+        <span class="runline">JOB {job.no} · RUN <span data-run>0001</span></span>
+      </div>
+      <button type="button" class="init" data-reset title="Reset all parameters">init</button>
+      <button type="button" class="key close" data-panel-close aria-label="Close parameter slip">
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M2 2 L12 12 M12 2 L2 12" stroke="#1A1A18" stroke-width="1.6" /></svg>
+      </button>
+    </div>
+    <div class="rule" aria-hidden="true"></div>
+
+    {job.params.map((d) => (
+      <div class="param">
+        <label for={`p-${d.key}`}>
+          <span>{d.label}</span>
+          <span class="dots" aria-hidden="true"></span>
+          <span class="val" data-show={d.key}>{showParam(d, p[d.key]!)}</span>
+        </label>
+        <input class="prm" type="range" id={`p-${d.key}`} data-param={d.key} min={d.min} max={d.max} step={d.step ?? 1} value={p[d.key]} />
+      </div>
+    ))}
+
+    <div class="pens">
+      <span class="caps lbl" id="pen2-label">Pen 2 colour</span>
+      <div class="swatches" role="group" aria-labelledby="pen2-label">
+        {PEN_COLOURS.map((c, i) => (
+          <button type="button" class="sw" data-swatch={c.id} aria-label={c.name} aria-pressed={i === 0 ? 'true' : 'false'}>
+            <span style={`background:${c.hex}`}></span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div class="rule" aria-hidden="true"></div>
+    <div class="actions">
+      <button class="redbtn rerun" type="button" data-rerun>Re-run job</button>
+      <button class="key key--wide" type="button" data-save-toggle aria-expanded="false" aria-controls="save-strip">Save ▾</button>
+    </div>
+
+    <div class="save-clip" data-save-clip>
+      <div id="save-strip" class="save">
+        <div class="save-head">
+          <span class="caps lbl">Output format</span>
+          <span class="file" data-file>job{job.no}_run0001</span>
+        </div>
+        <div class="formats">
+          {formats.map((f) => (
+            <button class="key fmt" type="button" data-format={f.id} aria-label={`Save as ${f.label}`}>
+              <span class="fl">{f.label}</span>
+              <span class="fh">{f.hint}</span>
+            </button>
+          ))}
+        </div>
+        <div class="pencil saved" data-saved aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+  <svg class="torn" aria-hidden="true" viewBox="0 0 100 4" preserveAspectRatio="none"><path d="M0 0 L100 0 L100 1 L96 4 L92 1 L88 4 L84 1 L80 4 L76 1 L72 4 L68 1 L64 4 L60 1 L56 4 L52 1 L48 4 L44 1 L40 4 L36 1 L32 4 L28 1 L24 4 L20 1 L16 4 L12 1 L8 4 L4 1 L0 4 Z" fill="var(--paper-slip)" /></svg>
+</div>
+
+<style>
+  .slip {
+    width: min(360px, 100%); margin-left: auto;
+    transform: translateX(105%); transform-origin: top left; visibility: hidden;
+    transition: transform var(--feed), visibility 0s linear 1.1s;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.22));
+  }
+  :global([data-panel-open]) .slip { transform: translateX(0) rotate(.6deg); visibility: visible; transition: transform var(--feed), visibility 0s; }
+
+  .paper {
+    background-color: var(--paper-slip);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 23px, var(--paper-rule) 23px 24px);
+    padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; border-top: 8px solid var(--band-blue);
+  }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .head-l { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .tape { transform: rotate(-.8deg); }
+  .runline { font-size: 11px; letter-spacing: .12em; opacity: .7; }
+  .init {
+    margin-left: auto; min-height: 44px; padding: 0 8px; background: transparent; border: 0; color: var(--ink);
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase; text-decoration: underline dotted; text-underline-offset: 4px; cursor: pointer;
+  }
+  .close { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .rule { border-top: 2px dotted rgba(26,26,24,.4); }
+
+  .param { display: flex; flex-direction: column; gap: 2px; }
+  .param label { display: flex; align-items: baseline; gap: 8px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+  .dots { flex: 1 1 auto; border-bottom: 2px dotted rgba(26,26,24,.3); }
+  .val { font-weight: 700; font-size: 14px; letter-spacing: .04em; }
+
+  .prm { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin: 0; cursor: pointer; }
+  .prm::-webkit-slider-runnable-track { height: 2px; background: repeating-linear-gradient(to right, var(--ink) 0 6px, transparent 6px 9px); }
+  .prm::-moz-range-track { height: 2px; background: repeating-linear-gradient(to right, var(--ink) 0 6px, transparent 6px 9px); }
+  .prm::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 24px; margin-top: -11px; background: var(--key-pink); border: 1px solid #8E5C58; box-shadow: inset 0 -3px 0 var(--key-pink-shade); }
+  .prm::-moz-range-thumb { width: 12px; height: 22px; border-radius: 0; background: var(--key-pink); border: 1px solid #8E5C58; box-shadow: inset 0 -3px 0 var(--key-pink-shade); }
+  .prm:focus-visible { outline: 2px dashed var(--ink); outline-offset: 2px; }
+
+  .pens { display: flex; flex-direction: column; gap: 8px; }
+  .lbl { font-size: 12px; }
+  .swatches { display: flex; gap: 8px; }
+  .sw { width: 44px; height: 44px; padding: 5px; background: var(--key-cream); border: 1px solid var(--key-cream-edge); cursor: pointer; }
+  .sw[aria-pressed="true"] { border: 2px solid var(--ink); }
+  .sw span { display: block; width: 100%; height: 100%; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .rerun { flex: 1 1 auto; min-height: 46px; padding: 0 16px; font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+
+  .save-clip { overflow: hidden; max-height: 0; transition: max-height .6s steps(10, end); }
+  :global([data-save-open]) .save-clip { max-height: 220px; }
+  .save { visibility: hidden; border-top: 2px dashed rgba(26,26,24,.35); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  :global([data-save-open]) .save { visibility: visible; }
+  .save-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .file { font-size: 11px; letter-spacing: .1em; opacity: .65; }
+  .formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; background: var(--key-frame); border-radius: 2px; }
+  .fmt { min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #3A3835; }
+  .fmt[data-on] {
+    background: var(--key-pink); border-color: var(--key-pink-edge);
+    box-shadow: inset 0 -4px 0 var(--key-pink-shade), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .fl { font-size: 13px; font-weight: 700; letter-spacing: .12em; }
+  .fh { font-size: 8px; letter-spacing: .1em; }
+  .saved { font-size: 24px; line-height: 1; min-height: 24px; transform: rotate(-1.5deg); }
+</style>

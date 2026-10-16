@@ -1,0 +1,64 @@
+---
+// The continuous-feed sheet: tractor strips, line numbers, printable area.
+interface Props {
+  /** green bars — start page only */
+  greenbars?: boolean;
+}
+const { greenbars = false } = Astro.props;
+const lineNumbers = Array.from({ length: 400 }, (_, i) => String(i + 1).padStart(3, '0')).join('\n');
+const imprints = Array.from({ length: 24 });
+---
+<div class="sheet">
+  <div class="tractor left" aria-hidden="true">
+    <div class="ticks"></div>
+    <div class="imprint">{imprints.map(() => <span>JOB FROM MOLNAR · 899-10-90-1968</span>)}</div>
+  </div>
+
+  <div class:list={['printable', { greenbars }]}>
+    <pre class="lines" aria-hidden="true">{lineNumbers}</pre>
+    <div class="content">
+      <slot />
+    </div>
+  </div>
+
+  <div class="tractor right" aria-hidden="true">
+    <div class="ticks"></div>
+  </div>
+</div>
+
+<style>
+  .sheet {
+    max-width: var(--sheet-max); margin: 0 auto; display: flex;
+    box-shadow: 0 24px 50px rgba(40,40,36,.22), 0 2px 4px rgba(40,40,36,.12);
+  }
+  .tractor {
+    flex: 0 0 var(--tractor); position: relative; overflow: hidden;
+    background-color: var(--paper);
+    background-image: radial-gradient(circle, var(--desk) 0 5.5px, transparent 6px);
+    background-size: 28px 40px; background-repeat: repeat-y;
+  }
+  .left { background-position: 4px 12px; border-right: 1.5px dashed var(--perforation); }
+  .right { background-position: calc(var(--tractor) - 32px) 12px; border-left: 1.5px dashed var(--perforation); }
+  .ticks {
+    position: absolute; top: 0; bottom: 0; width: 9px;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 318px, var(--tick) 318px 320px);
+  }
+  .left .ticks { left: calc(var(--tractor) - 20px); }
+  .right .ticks { left: 8px; }
+  .imprint {
+    position: absolute; top: 60px; left: calc(var(--tractor) - 18px); writing-mode: vertical-rl;
+    display: flex; gap: 160px; font-size: 9px; letter-spacing: .14em; color: var(--imprint); white-space: nowrap;
+  }
+
+  .printable { flex: 1 1 auto; min-width: 0; position: relative; background-color: var(--paper); }
+  .greenbars { background-image: repeating-linear-gradient(to bottom, transparent 0 72px, var(--greenbar) 72px 144px); }
+  .lines {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 44px; margin: 0; overflow: hidden;
+    padding-top: 6px; text-align: center;
+    font: 10px/24px var(--font-mono); letter-spacing: .05em; color: var(--line-no);
+  }
+  .content { position: relative; padding: 28px var(--pad-x) 0 var(--pad-l); display: flex; flex-direction: column; }
+  @media (max-width: 600px) {
+    .lines, .imprint { display: none; }
+  }
+</style>
