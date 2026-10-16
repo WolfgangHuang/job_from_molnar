@@ -1,11 +1,13 @@
 import { draw, path, type Pt } from '../engine';
+import { SRC } from './sources';
 import { defineJob } from './types';
 
 export default defineJob({
   no: '0001',
   title: '1% Disorder',
   technique: 'concentric squares',
-  reference: '“1 % de désordre”, Molnar’s recurring idea of a measured dose of chance',
+  reference: '“1 % de désordre” — and works such as “1% de désordre / Main ordinateur”',
+  sources: [SRC.pompidou, SRC.spalter1pc, SRC.leonardo1975],
   seed: 1968,
   params: [
     { key: 'grid', label: 'Grid', min: 1, max: 10, default: 6, show: (v) => `${v}×${v}` },
@@ -41,5 +43,5 @@ export default defineJob({
   caption: (p) => `${p.grid}×${p.grid} · ${p.rings} rings`,
   note: (p, run) => `run ${run} — ${p.disorder}%`,
   description:
-    'A strict grid of concentric squares, disturbed by a measured dose of chance. Push <b>Disorder</b> from 0 to 30 and watch order give way, one percent at a time — the question Molnar kept returning to.',
+    'A strict grid of concentric squares, disturbed by a measured dose of chance. Molnar called it her “1 % de désordre”: a small error injected on purpose to unsettle the system. Here every square trembles by the <b>Disorder</b> percentage, and now and then one breaks loose entirely. Push it from 0 to 30 and watch order give way, one percent at a time.',
 });

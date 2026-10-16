@@ -84,3 +84,54 @@ describe('export', () => {
     expect(stats(opt, 1).travel).toBeLessThan(stats(plot, 1).travel);
   });
 });
+
+import { magicSquare, MELENCOLIA, brokenPolygon, hatchRect, bentPts, BENDS, squarePts } from '../src/engine';
+
+describe('magic squares', () => {
+  it.each([3, 4, 5, 6, 7, 8, 9, 10])('order %i is magic and uses 1..n² once', (n) => {
+    const m = magicSquare(n), sum = (n * (n * n + 1)) / 2;
+    expect(new Set(m.flat())).toEqual(new Set(Array.from({ length: n * n }, (_, i) => i + 1)));
+    for (let i = 0; i < n; i++) {
+      expect(m[i]!.reduce((a, b) => a + b, 0)).toBe(sum);
+      expect(m.reduce((a, r) => a + r[i]!, 0)).toBe(sum);
+    }
+    expect(m.reduce((a, r, i) => a + r[i]!, 0)).toBe(sum);
+    expect(m.reduce((a, r, i) => a + r[n - 1 - i]!, 0)).toBe(sum);
+  });
+  it('order 4 is Dürer’s square', () => expect(magicSquare(4)).toEqual(MELENCOLIA));
+});
+
+describe('shapes', () => {
+  const sq = squarePts(0, 0, 10);
+  it('brokenPolygon: all sides kept → one closed stroke', () => {
+    const ps = brokenPolygon(sq, [true, true, true, true]);
+    expect(ps).toHaveLength(1);
+    expect(ps[0]!.closed).toBe(true);
+    expect(ps[0]!.pts).toHaveLength(4);
+  });
+  it('brokenPolygon: one side missing → one open stroke over three sides', () => {
+    const ps = brokenPolygon(sq, [true, false, true, true]);
+    expect(ps).toHaveLength(1);
+    expect(ps[0]!.closed).toBe(false);
+    expect(ps[0]!.pts).toEqual([sq[2], sq[3], sq[0], sq[1]]);
+  });
+  it('brokenPolygon: opposite sides missing → two strokes', () => {
+    expect(brokenPolygon(sq, [true, false, true, false])).toHaveLength(2);
+  });
+  it('hatchRect keeps every line inside the rectangle', () => {
+    for (const a of [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4, 0.3]) {
+      const ls = hatchRect(10, 20, 50, 30, a, 7);
+      expect(ls).toHaveLength(7);
+      for (const l of ls) for (const [x, y] of l.pts) {
+        expect(x).toBeGreaterThanOrEqual(10 - 1e-9); expect(x).toBeLessThanOrEqual(60 + 1e-9);
+        expect(y).toBeGreaterThanOrEqual(20 - 1e-9); expect(y).toBeLessThanOrEqual(50 + 1e-9);
+      }
+    }
+  });
+  it('bentPts ends exactly at b and leaves straight parts straight', () => {
+    const pts = bentPts([0, 0], [100, 0], BENDS.parabola, 10, 0.2, 0.8, 10);
+    expect(pts[0]).toEqual([20, 0]);
+    expect(pts[pts.length - 1]).toEqual([100, 0]);
+    expect(Math.max(...pts.map((p) => Math.abs(p[1])))).toBeCloseTo(10, 5);
+  });
+});

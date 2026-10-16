@@ -4,3 +4,4 @@ export * from './shapes';
 export * from './plot';
 export * from './svg';
 export * from './optimize';
+export * from './magic';

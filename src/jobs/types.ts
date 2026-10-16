@@ -18,6 +18,11 @@ export interface ParamDef {
   show?: (v: number) => string;
 }
 
+export interface Source {
+  label: string;
+  url?: string;
+}
+
 export interface JobDef {
   /** four digits, e.g. "0001" */
   no: string;
@@ -26,6 +31,8 @@ export interface JobDef {
   technique: string;
   /** the original work this job is after (shown on the detail page) */
   reference?: string;
+  /** where the facts in the description come from */
+  sources?: Source[];
   /** default seed; "Re-run job" counts up from here */
   seed: number;
   params: ParamDef[];

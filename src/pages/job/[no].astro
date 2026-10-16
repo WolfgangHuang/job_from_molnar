@@ -70,7 +70,18 @@ const pens = pensLabel(plot).toLowerCase().replace('+', ' + ');
     <div class="about">
       <div class="text">
         <p set:html={job.description} />
-        {job.reference && <p class="ref"><span class="caps">Reference</span> {job.reference}</p>}
+        {job.reference && <p class="ref"><span class="caps">After</span> {job.reference}</p>}
+        {job.sources?.length && (
+          <p class="ref">
+            <span class="caps">Sources</span>{' '}
+            {job.sources.map((s, i) => (
+              <>
+                {i > 0 && ' · '}
+                {s.url ? <a href={s.url} rel="noopener" target="_blank">{s.label}</a> : s.label}
+              </>
+            ))}
+          </p>
+        )}
       </div>
       <div>
         <button class="key key--wide" type="button" data-panel-toggle aria-expanded="false" aria-controls="param-slip">Parameters ▸</button>
